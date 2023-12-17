@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Interaction</title>
+</head>
+<body>
+
+<h1>Wallet Interaction</h1>
+
+<button onclick="connectWallet()">Connect Wallet</button>
+<button onclick="getYourAddress()">Your Address</button>
+<button onclick="getContractOwnerAddress()">Contract Owner Address</button>
+<button onclick="disconnectWallet()">Disconnect Wallet</button>
+
+<p id="walletStatus">Wallet Status: Not Connected</p>
+<p id="yourAddress">Your Address: </p>
+<p id="contractOwnerAddress">Contract Owner Address: </p>
+
+<script src="https://cdn.ethers.io/v5.0.5/dist/ethers.min.js"></script>
+<script>
+    let walletAddress;
+
+    async function connectWallet() {
+        if (window.ethereum) {
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                walletAddress = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+                document.getElementById('walletStatus').innerText = 'Wallet Status: Connected';
+            } catch (error) {
+                console.error(error);
+                document.getElementById('walletStatus').innerText = 'Wallet Status: Connection Failed';
+            }
+        } else {
+            alert('MetaMask extension not detected. Please install MetaMask and try again.');
+        }
+    }
+
+    function getYourAddress() {
+        if (walletAddress) {
+            document.getElementById('yourAddress').innerText = 'Your Address: ' + walletAddress;
+        } else {
+            alert('Wallet not connected. Please connect your wallet.');
+        }
+    }
+
+    function getContractOwnerAddress() {
+        // Replace with the logic to get the contract owner address
+        // For demonstration purposes, it's set to a placeholder value
+        const contractOwnerAddress = '0xContractOwnerAddress';
+        document.getElementById('contractOwnerAddress').innerText = 'Contract Owner Address: ' + contractOwnerAddress;
+    }
+
+    function disconnectWallet() {
+        walletAddress = undefined;
+        document.getElementById('walletStatus').innerText = 'Wallet Status: Not Connected';
+        document.getElementById('yourAddress').innerText = 'Your Address: ';
+        document.getElementById('contractOwnerAddress').innerText = 'Contract Owner Address: ';
+    }
+</script>
+
+</body>
+</html>
