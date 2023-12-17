@@ -12,6 +12,8 @@
 <button onclick="connectWallet()">Connect Wallet</button>
 <button onclick="getYourAddress()">Your Address</button>
 <button onclick="getContractOwnerAddress()">Contract Owner Address</button>
+<button onclick="enter()">Enter</button>
+<button onclick="pickWinner()">Pick Winner</button>
 <button onclick="disconnectWallet()">Disconnect Wallet</button>
 
 <p id="walletStatus">Wallet Status: Not Connected</p>
@@ -21,6 +23,127 @@
 <script src="https://cdn.ethers.io/v5.0.5/dist/ethers.min.js"></script>
 <script>
     let walletAddress;
+    const contractAddress = '0xe8961dfe3240d3671dbf765faa9d5ba0ecfa3464'; // Replace with your contract address
+    const contractABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "enter",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getParticipants",
+		"outputs": [
+			{
+				"internalType": "address payable[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "manager",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "participants",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "pickWinner",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address payable",
+				"name": "_manager",
+				"type": "address"
+			}
+		],
+		"name": "setManager",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "winner",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "winningnum",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+    const contract = new ethers.Contract(contractAddress, contractABI);
 
     async function connectWallet() {
         if (window.ethereum) {
@@ -50,6 +173,36 @@
         // For demonstration purposes, it's set to a placeholder value
         const contractOwnerAddress = '0xContractOwnerAddress';
         document.getElementById('contractOwnerAddress').innerText = 'Contract Owner Address: ' + contractOwnerAddress;
+    }
+
+    async function enter() {
+        try {
+            if (walletAddress) {
+                // Call the "enter" function on your contract
+                const tx = await contract.enter({ from: walletAddress });
+                await tx.wait();
+                console.log('Entered successfully.');
+            } else {
+                alert('Wallet not connected. Please connect your wallet.');
+            }
+        } catch (error) {
+            console.error('Error entering:', error);
+        }
+    }
+
+    async function pickWinner() {
+        try {
+            if (walletAddress) {
+                // Call the "pickWinner" function on your contract
+                const tx = await contract.pickWinner({ from: walletAddress });
+                await tx.wait();
+                console.log('Winner picked successfully.');
+            } else {
+                alert('Wallet not connected. Please connect your wallet.');
+            }
+        } catch (error) {
+            console.error('Error picking winner:', error);
+        }
     }
 
     function disconnectWallet() {
