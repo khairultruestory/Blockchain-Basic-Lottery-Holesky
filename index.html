@@ -3,213 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet Interaction</title>
+    <title>Lottery Game</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fascinate+Inline">
+    <script type="text/javascript" src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #ffcc00, #ff0066, #cc00cc, #0066ff);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            text-align: center;
+            color: #fff;
+        }
+
+        h1 {
+            font-family: 'Fascinate Inline', cursive;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .lottery-info {
+            margin-bottom: 20px;
+        }
+
+        /* Your existing styles go here */
+    </style>
 </head>
 <body>
 
-<h1>Wallet Interaction</h1>
+<div class="container">
+    <h1>Lottery in Holesky</h1>
+    <div class="lottery-info">
+        <p>Lottery Pot: <span id="lottery-pot">$0.00</span></p>
+        <p>Participants: <span id="participants"></span></p>
+    </div>
+    <button class="connect-wallet" onclick="connectWallet()">Connect Wallet</button>
+    <p>Your Wallet: <span id="thiswalletaddress">Not Connected</span></p>
+    <button class="enter" onclick="enterLottery()">Enter</button>
+    <button class="pick-winner" onclick="pickWinner()">Pick Winner</button>
+</div>
 
-<button onclick="connectWallet()">Connect Wallet</button>
-<button onclick="getYourAddress()">Your Address</button>
-<button onclick="getContractOwnerAddress()">Contract Owner Address</button>
-<button onclick="enter()">Enter</button>
-<button onclick="pickWinner()">Pick Winner</button>
-<button onclick="disconnectWallet()">Disconnect Wallet</button>
-
-<p id="walletStatus">Wallet Status: Not Connected</p>
-<p id="yourAddress">Your Address: </p>
-<p id="contractOwnerAddress">Contract Owner Address: </p>
-
-<script src="https://cdn.ethers.io/v5.0.5/dist/ethers.min.js"></script>
 <script>
-    let walletAddress;
-    const contractAddress = '0xe8961dfe3240d3671dbf765faa9d5ba0ecfa3464'; // Replace with your contract address
-    const contractABI = [
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [],
-		"name": "enter",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getParticipants",
-		"outputs": [
-			{
-				"internalType": "address payable[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "manager",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "participants",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "pickWinner",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address payable",
-				"name": "_manager",
-				"type": "address"
-			}
-		],
-		"name": "setManager",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "winner",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "winningnum",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
+    // Replace the following variables with your actual contract address and ABI
 
-    const contract = new ethers.Contract(contractAddress, contractABI);
+
+    let provider;
+    let signer;
+    
+    let walletaddress;
 
     async function connectWallet() {
-        if (window.ethereum) {
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                walletAddress = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
-                document.getElementById('walletStatus').innerText = 'Wallet Status: Connected';
-            } catch (error) {
-                console.error(error);
-                document.getElementById('walletStatus').innerText = 'Wallet Status: Connection Failed';
-            }
-        } else {
-            alert('MetaMask extension not detected. Please install MetaMask and try again.');
-        }
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // Connect to the wallet using Ethers.js
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        const contract = contract = new ethers.Contract(contractAddress, contractABI, signer);
+        walletAddress = (await window.ethereum.request({ method: 'eth_accounts' }))[0];
+document.getElementById('thiswalletaddress').innerText = walletaddress;
+        // Update the lottery pot and participants display
+        //updateLotteryPot();
+        //updateParticipants();
+        console.log("wallet connected");
     }
 
-    function getYourAddress() {
-        if (walletAddress) {
-            document.getElementById('yourAddress').innerText = 'Your Address: ' + walletAddress;
-        } else {
-            alert('Wallet not connected. Please connect your wallet.');
+    async function enterLottery() {
+        if (!signer) {
+            alert('Please connect your wallet first.');
+            return;
         }
-    }
 
-    function getContractOwnerAddress() {
-        // Replace with the logic to get the contract owner address
-        // For demonstration purposes, it's set to a placeholder value
-        const contractOwnerAddress = '0xContractOwnerAddress';
-        document.getElementById('contractOwnerAddress').innerText = 'Contract Owner Address: ' + contractOwnerAddress;
-    }
+        // Call the contract function to enter the lottery
+        await contract.enterLottery();
 
-    async function enter() {
-        try {
-            if (walletAddress) {
-                // Call the "enter" function on your contract
-                const tx = await contract.enter({ from: walletAddress });
-                await tx.wait();
-                console.log('Entered successfully.');
-            } else {
-                alert('Wallet not connected. Please connect your wallet.');
-            }
-        } catch (error) {
-            console.error('Error entering:', error);
-        }
+        // Update the lottery pot and participants display
+        updateLotteryPot();
+        updateParticipants();
+        playChime();
     }
 
     async function pickWinner() {
-        try {
-            if (walletAddress) {
-                // Call the "pickWinner" function on your contract
-                const tx = await contract.pickWinner({ from: walletAddress });
-                await tx.wait();
-                console.log('Winner picked successfully.');
-            } else {
-                alert('Wallet not connected. Please connect your wallet.');
-            }
-        } catch (error) {
-            console.error('Error picking winner:', error);
+        if (!signer) {
+            alert('Please connect your wallet first.');
+            return;
         }
+
+        // Call the contract function to pick the winner
+        await contract.pickWinner();
+
+        // Update the lottery pot and participants display
+        updateLotteryPot();
+        updateParticipants();
+        playChime();
     }
 
-    function disconnectWallet() {
-        walletAddress = undefined;
-        document.getElementById('walletStatus').innerText = 'Wallet Status: Not Connected';
-        document.getElementById('yourAddress').innerText = 'Your Address: ';
-        document.getElementById('contractOwnerAddress').innerText = 'Contract Owner Address: ';
+    async function updateLotteryPot() {
+        // Call the contract function to get the current lottery pot amount
+        const lotteryPot = await contract.getLotteryPot();
+        document.getElementById('lottery-pot').innerText = ethers.utils.formatEther(lotteryPot) + ' ETH';
+    }
+
+    async function updateParticipants() {
+        // Call the contract function to get the current participants
+        const participants = await contract.getParticipants();
+        document.getElementById('participants').innerText = participants.join(', ');
+    }
+
+    function playChime() {
+        const chime = new Audio('chime.mp3'); // replace 'chime.mp3' with the path to your chime sound file
+        chime.play();
     }
 </script>
 
