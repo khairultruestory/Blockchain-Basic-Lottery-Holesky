@@ -1,2 +1,2 @@
-# Lottest-ethers
-<a href=https://khairultruestory.github.io/Lottest-ethers/> click here </a>
+# Basic Lottery Test on Holesky with ethers - wip
+<a href=https://khairultruestory.github.io/Blockchain-Basic-Lottery-Holesky/> click here </a>
